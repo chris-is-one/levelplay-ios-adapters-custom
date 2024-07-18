@@ -422,24 +422,22 @@ static PAGSdk* _pangleSDK = nil;
     NSString *slotId = adapterConfig.settings[kSlotId];
     LogAdapterApi_Internal(@"slotId = %@", slotId);
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        PAGRewardedAd *rewardedVideoAd = [self->_rewardedVideoSlotIdToAd objectForKey:slotId];
+    PAGRewardedAd *rewardedVideoAd = [_rewardedVideoSlotIdToAd objectForKey:slotId];
+    
+    if ([self hasRewardedVideoWithAdapterConfig:adapterConfig]) {
+        [self.rewardedVideoAdsAvailability setObject:@NO
+                                              forKey:slotId];
         
-        if ([self hasRewardedVideoWithAdapterConfig:adapterConfig]) {
-            [self.rewardedVideoAdsAvailability setObject:@NO
-                                                  forKey:slotId];
-            
-            [rewardedVideoAd presentFromRootViewController:viewController];
-            
-        } else {
-            NSError *error = [NSError errorWithDomain:kAdapterName
-                                                 code:ERROR_CODE_NO_ADS_TO_SHOW
-                                             userInfo:@{NSLocalizedDescriptionKey:@"No ads to show"}];
-            LogAdapterApi_Internal(@"error = %@", error);
-            
-            [delegate adapterRewardedVideoDidFailToShowWithError:error];
-        }
-    });
+        [rewardedVideoAd presentFromRootViewController:viewController];
+        
+    } else {
+        NSError *error = [NSError errorWithDomain:kAdapterName
+                                             code:ERROR_CODE_NO_ADS_TO_SHOW
+                                         userInfo:@{NSLocalizedDescriptionKey:@"No ads to show"}];
+        LogAdapterApi_Internal(@"error = %@", error);
+        
+        [delegate adapterRewardedVideoDidFailToShowWithError:error];
+    }
 }
 
 - (BOOL)hasRewardedVideoWithAdapterConfig:(ISAdapterConfig *)adapterConfig {
